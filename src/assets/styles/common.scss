@@ -1,0 +1,109 @@
+@use 'variables' as *;
+
+@font-face {
+    font-family: 'Pretendard';
+    font-style: normal;
+    src: url('../fonts/PretendardVariable.woff2') format('woff2');
+    font-display: swap;
+}
+
+html {
+    font-size: 10px;
+    background: $bg-gray02;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-size: 1.3rem;
+    color: $text02;
+}
+
+body,
+button,
+input,
+textarea {
+    font-family:
+        'Pretendard',
+        -apple-system,
+        BlinkMacSystemFont,
+        'Segoe UI',
+        'Roboto',
+        'Oxygen',
+        'Ubuntu',
+        'Cantarell',
+        'Fira Sans',
+        'Droid Sans',
+        'Helvetica Neue',
+        sans-serif;
+}
+
+code {
+    font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+}
+
+* {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+li {
+    list-style: none;
+}
+
+a {
+    text-decoration: none;
+    color: $text02;
+}
+
+button {
+    cursor: pointer;
+}
+
+table,
+tr,
+th,
+td {
+    border: none;
+}
+
+input,
+textarea {
+    outline: none;
+
+    &::placeholder {
+        color: $text04;
+        font-size: 1.2rem;
+    }
+}
+
+
+/* display-none */
+.display-none {
+    display: none !important;
+}
+
+/* search, table 영역 헤더 (임시) */
+.search,
+.table {
+    &-header {
+        @include flex(space-between);
+    }
+}
+
+/* 사이즈 - width */
+.w25 {
+    width: 25% !important;
+}
+
+.w50 {
+    width: 50% !important;
+}
+
+.w75 {
+    width: 75% !important;
+}
+
