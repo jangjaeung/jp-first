@@ -1,0 +1,59 @@
+input {
+    width: 100%;
+    height: 3rem;
+    border: 1px solid $line_gray;
+    border-radius: 0.4rem;
+    padding: 0 0.8rem;
+
+    &:-webkit-autofill,
+    &:-webkit-autofill:hover,
+    &:-webkit-autofill:focus,
+    &:-webkit-autofill:active {
+        -webkit-text-fill-color: #000;
+        -webkit-box-shadow: 0 0 0px 1000px #fff inset;
+        box-shadow: 0 0 0px 1000px #fff inset;
+        transition: background-color 5000s ease-in-out 0s;
+    }
+
+    &:autofill,
+    &:autofill:hover,
+    &:autofill:focus,
+    &:autofill:active {
+        -webkit-text-fill-color: #000;
+        -webkit-box-shadow: 0 0 0px 1000px #fff inset;
+        box-shadow: 0 0 0px 1000px #fff inset;
+        transition: background-color 5000s ease-in-out 0s;
+    }
+
+    &:focus {
+        border: 1px solid $primary;
+    }
+    &:disabled {
+        background: #fbfbfc;
+        border: 1px solid rgba($bg-gray03, 0.6);
+        color: $text03;
+    }
+
+    &[type='file'] {
+        display: none;
+    }
+
+    &[type='date'] {
+        &:not(.datepicker-input) {
+            min-width: 14rem;
+            width: 14rem;
+        }
+    }
+
+    &.short {
+        max-width: 10rem;
+    }
+
+    &.middle {
+        width: 21rem;
+    }
+
+    &.long {
+        width: 30rem;
+    }
+}

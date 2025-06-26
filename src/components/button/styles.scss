@@ -1,0 +1,196 @@
+button {
+    min-height: 3rem;
+    min-width: fit-content;
+    background: none;
+    color: #fff;
+    border: none;
+    border-radius: 0.4rem;
+    font-size: 1.3rem;
+    font-weight: 500;
+    transition: all 0.1s;
+    padding: 0 0.8rem;
+    @include flex(center);
+
+    p {
+        @include flex(center);
+    }
+
+    /* 아이콘만 있는 버튼 */
+    &:not(:has(p)),
+    &.icon {
+        width: 3rem;
+        min-width: 3rem;
+        padding: 0;
+
+        svg {
+            margin: 0;
+        }
+        p {
+            display: none;
+        }
+
+        // 툴팁
+        &:hover {
+            position: relative;
+            p {
+                display: block;
+                position: absolute;
+                background: #fff;
+                border: 1px solid $line_gray;
+                color: $text03;
+                text-wrap: nowrap;
+                padding: 0.6rem;
+                bottom: -3rem;
+                border-radius: 0.5rem;
+                z-index: 100;
+                font-size: 1.2rem;
+                @include animation(tooltip, 0.8s);
+            }
+        }
+    }
+
+    svg {
+        font-size: 1.6rem;
+        margin-right: 0.4rem;
+        transition: color 0.1s;
+        flex-shrink: 0;
+    }
+
+    /** 색상 관리 (border style 적용 시 class에 border 추가) **/
+    &.btn-blue {
+        background: $primary;
+        &:hover {
+            background: #4474ff;
+        }
+        @include borderBtn($primary);
+    }
+
+    &.btn-red {
+        background: $error;
+        &:hover {
+            background: #ff285e;
+        }
+        @include borderBtn($error);
+    }
+
+    &.btn-navy {
+        background: $navy;
+        &:hover {
+            background: #272d4f;
+        }
+        @include borderBtn($navy);
+    }
+
+    &.btn-gray {
+        background: $bg-gray05;
+        &:hover {
+            background: #a2a4ae;
+        }
+        @include borderBtn($line_gray);
+        &.border {
+            color: $text03 !important;
+            &:hover {
+                background: rgba($line_gray, 0.2);
+            }
+        }
+    }
+
+    &.btn-yellow {
+        background: $yellow;
+        &:hover {
+            background: #ff8229;
+        }
+        @include borderBtn($yellow);
+    }
+
+    &.btn-black {
+        background: $text02;
+        &:hover {
+            background: #252526;
+        }
+        @include borderBtn($text03);
+
+        &:disabled {
+            color: $text04;
+        }
+
+        &.border {
+            &:disabled {
+                border-color: $text04;
+            }
+        }
+    }
+
+    &.btn-purple {
+        background: #be78ff;
+        &:hover {
+            background: #be78ff;
+        }
+        @include borderBtn(#be78ff);
+    }
+
+    &.btn-deepgreen {
+        background: #51ad72;
+        &:hover {
+            background: #51ad72;
+        }
+        @include borderBtn(#51ad72);
+    }
+
+    &.btn-green {
+        background: $green;
+        &:hover {
+            background: #1fd392;
+        }
+        @include borderBtn($green);
+    }
+
+    /** 길이 관리 **/
+    &.short {
+        min-width: 7.2rem;
+    }
+    &.middle {
+        min-width: 15rem;
+    }
+    &.long {
+        min-width: 25rem;
+    }
+
+    /** 비활성화 style **/
+    &:disabled {
+        opacity: 0.3;
+        pointer-events: none;
+    }
+
+
+    &.small {
+        min-height: auto;
+        height: 2.1rem;
+        padding: 0;
+        border: none !important;
+        font-size: 1.2rem;
+        svg {
+            font-size: 1.3rem;
+        }
+
+        &:hover {
+            border: none;
+            background: none !important;
+            font-weight: 700;
+        }
+    }
+}
+
+.btn-wrap {
+    min-height: auto;
+    gap: 0.8rem;
+    @include flex(end);
+
+    &.bottom {
+        margin-bottom: 2rem;
+        justify-content: center;
+    }
+    &.top {
+        margin-bottom: 1.4rem;
+    }
+}
