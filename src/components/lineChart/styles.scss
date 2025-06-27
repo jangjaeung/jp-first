@@ -1,0 +1,56 @@
+#lineChart {
+    position: relative;
+    width: 100%;
+
+    // x,y 축 레이블
+    .label {
+        &-y {
+            position: absolute;
+            top: -0.5rem;
+            left: 0;
+            font-size: 1.2rem;
+            font-weight: 500;
+            @include flex(space-between, end, column-reverse);
+        }
+
+        &-x {
+            height: 1.2rem;
+            position: absolute;
+            bottom: 1.6rem;
+            font-size: 1.1rem;
+            @include flex(space-between);
+            > div {
+                position: absolute;
+                transform: translateX(-50%);
+                text-align: center;
+            }
+        }
+    }
+
+    .line {
+        &-x {
+            position: absolute;
+            top: 0;
+            right: 0;
+            pointer-events: none;
+        }
+    }
+
+    // 데이터 값
+    .data-label {
+        background-color: #fff;
+        border: 1px solid $line_gray;
+        padding: 0.4rem;
+        text-align: center;
+        font-size: 1rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        // 추후 적용(개발완료후)
+        > .value {
+            font-size: 1.2rem;
+        }
+        > .time {
+            color: $text03;
+        }
+    }
+}
