@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { CHART_WIDTH_PADDING, PADDING_RATIO } from './const'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { CHART_WIDTH_PADDING } from './const'
 import './styles'
 
 type Point = { x: number; y: number }
@@ -10,6 +10,9 @@ interface ILineChart {
     chartHeight?: number
     yTicks?: number
     yAxisWidth?: number
+    paddingRatio?: number
+    customTooltip?: (data: DataPoint) => React.ReactNode
+    tickFormatter?: (data: DataPoint, idx: number, arr?: DataPoint[]) => string
 }
 /**
  *
@@ -17,14 +20,19 @@ interface ILineChart {
  * @param chartHeight 세로 크기
  * @param yTicks  Y축 틱 갯수
  * @param yAxisWidth 이 값이 커지면 Y축 라벨이 넓게 보이고, 작아지면 라벨이 차트와 더 가까워짐
+ * @param paddingRatio 최상단 마진 비율
+ * @param customTooltip 마우스 호버시 노출할 툴팁 (default: data.value)
+ * @param tickFormatter x축 라벨 커스텀 (default: data.label)
  */
-const LineChart = ({ data, chartHeight = 200, yTicks = 5, yAxisWidth = 40 }: ILineChart) => {
+const LineChart = ({ data, chartHeight = 200, yTicks = 5, yAxisWidth = 40, paddingRatio = 0.2, customTooltip, tickFormatter }: ILineChart) => {
     const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
     const [containerWidth, setContainerWidth] = useState<number>(0)
     const containerRef = useRef<HTMLDivElement>(null)
+    const [tooltipSizes, setTooltipSizes] = useState<{ [key: string]: { width: number; height: number } }>({})
+    const tooltipRefs = useRef<{ [key: string]: HTMLDivElement | null }>({})
 
     const [maxVal, minVal] = useMemo(() => [Math.max(...data.map(d => d.value), 0), Math.min(...data.map(d => d.value), 0)], [data])
-    const scaledMaxVal = useMemo(() => maxVal + (maxVal - minVal) * PADDING_RATIO, [maxVal, minVal])
+    const scaledMaxVal = useMemo(() => maxVal + (maxVal - minVal) * paddingRatio, [maxVal, minVal])
     const yScales = useMemo(() => Array.from({ length: yTicks + 1 }, (_, i) => Math.round((scaledMaxVal / yTicks) * i)), [scaledMaxVal, yTicks])
 
     // 같은 key 별로 묶기
@@ -38,6 +46,16 @@ const LineChart = ({ data, chartHeight = 200, yTicks = 5, yAxisWidth = 40 }: ILi
         })
         return groups
     }, [data])
+
+    useLayoutEffect(() => {
+        // customTooltip이 있는 경우만 측정
+        if (!customTooltip) return
+        const newSizes: { [key: string]: { width: number; height: number } } = {}
+        Object.entries(tooltipRefs.current).forEach(([k, ref]) => {
+            if (ref) newSizes[k] = { width: ref.offsetWidth, height: ref.offsetHeight }
+        })
+        setTooltipSizes(newSizes)
+    }, [groupedData, customTooltip, hoveredIndex])
 
     useEffect(() => {
         if (!containerRef.current) return
@@ -77,6 +95,37 @@ const LineChart = ({ data, chartHeight = 200, yTicks = 5, yAxisWidth = 40 }: ILi
         })
         return result
     }, [data, scaledMaxVal, yAxisWidth, chartHeight, containerWidth, groupedData])
+
+    const handleMouseMove = useCallback(
+        (e: React.MouseEvent<SVGSVGElement, MouseEvent>) => {
+            const svgRect = e.currentTarget.getBoundingClientRect()
+            const x = e.clientX - svgRect.left
+
+            let closest = 0
+            let closestDistance = Infinity
+            Object.entries(linePoints).forEach(([key, points]) => {
+                points.forEach((p, i) => {
+                    const dist = Math.abs(p.x - x)
+                    if (dist < closestDistance) {
+                        closestDistance = dist
+                        closest = i
+                    }
+                })
+            })
+
+            // 마우스 위치가 포인트 양옆 20px 안에 들어오면 라벨 노출
+            if (closestDistance <= 20) {
+                setHoveredIndex(closest)
+            } else {
+                setHoveredIndex(null)
+            }
+        },
+        [linePoints],
+    )
+
+    const handleMouseLeave = useCallback(() => {
+        setHoveredIndex(null)
+    }, [])
 
     // 툴팁 x 좌표 계산 함수
     const getTooltipX = useCallback(
@@ -123,7 +172,13 @@ const LineChart = ({ data, chartHeight = 200, yTicks = 5, yAxisWidth = 40 }: ILi
             </svg>
 
             {/* 선 + 마우스 인터랙션 */}
-            <svg width={containerWidth} height={chartHeight + 40} style={{ position: 'absolute', top: 0, left: 0 }}>
+            <svg
+                width={containerWidth}
+                height={chartHeight + 40}
+                style={{ position: 'absolute', top: 0, left: 0 }}
+                onMouseMove={handleMouseMove}
+                onMouseLeave={handleMouseLeave}
+            >
                 {Object.entries(linePoints)?.map(([key, points]) => (
                     <g key={key}>
                         <polyline
@@ -151,7 +206,7 @@ const LineChart = ({ data, chartHeight = 200, yTicks = 5, yAxisWidth = 40 }: ILi
                                     <foreignObject
                                         x={getTooltipX(p, i, points, key)}
                                         y={(() => {
-                                            const tooltipHeight = 30
+                                            const tooltipHeight = customTooltip ? (tooltipSizes[`${key}_${i}`]?.height ?? 30) : 30
                                             // 1. dot 위에 툴팁을 띄우는 y좌표
                                             const aboveY = p.y - tooltipHeight - 8
                                             // 2. dot 아래에 툴팁을 띄우는 y좌표
@@ -163,29 +218,35 @@ const LineChart = ({ data, chartHeight = 200, yTicks = 5, yAxisWidth = 40 }: ILi
                                             }
                                             return aboveY
                                         })()}
-                                        width={String(groupedData[key][i].value).length * 8 + 16 + 'px'}
-                                        height={30}
+                                        width={
+                                            customTooltip
+                                                ? (tooltipSizes[`${key}_${i}`]?.width ?? 60) + 'px'
+                                                : String(groupedData[key][i].value).length * 8 + 16 + 'px'
+                                        }
+                                        height={customTooltip ? (tooltipSizes[`${key}_${i}`]?.height ?? 30) : 30}
                                     >
-                                        <div
-                                            className="data-label"
-                                            style={{
-                                                color: groupedData[key][i].color,
-                                            }}
-                                        >
-                                            <p style={{ margin: 0 }}>{groupedData[key][i].value}</p>
-                                        </div>
+                                        {customTooltip ? (
+                                            <div
+                                                ref={el => {
+                                                    tooltipRefs.current[`${key}_${i}`] = el
+                                                }}
+                                                style={{ display: 'inline-block' }}
+                                            >
+                                                {customTooltip(groupedData[key][i])}
+                                            </div>
+                                        ) : (
+                                            <div
+                                                className="data-label"
+                                                style={{
+                                                    color: groupedData[key][i].color,
+                                                }}
+                                            >
+                                                <p style={{ margin: 0 }}>{groupedData[key][i].value}</p>
+                                            </div>
+                                        )}
                                     </foreignObject>
                                 )}
-                                <circle
-                                    cx={p.x}
-                                    cy={p.y}
-                                    r={3}
-                                    fill={groupedData[key][0].color}
-                                    stroke={groupedData[key][0].color}
-                                    strokeWidth={1}
-                                    onMouseEnter={() => setHoveredIndex(i)}
-                                    onMouseLeave={() => setHoveredIndex(null)}
-                                />
+                                <circle cx={p.x} cy={p.y} r={3} fill={groupedData[key][0].color} stroke={groupedData[key][0].color} strokeWidth={1} />
                             </g>
                         ))}
                     </g>
@@ -201,7 +262,7 @@ const LineChart = ({ data, chartHeight = 200, yTicks = 5, yAxisWidth = 40 }: ILi
                     userSelect: 'none',
                 }}
             >
-                {Object.values(groupedData)[0]?.map((d, i) => {
+                {Object.values(groupedData)[0]?.map((d, i, arr) => {
                     const padding = (containerWidth - yAxisWidth) * CHART_WIDTH_PADDING
                     const segmentWidth =
                         Object.values(groupedData)[0].length === 1
@@ -215,7 +276,7 @@ const LineChart = ({ data, chartHeight = 200, yTicks = 5, yAxisWidth = 40 }: ILi
                                 left: `${x}px`,
                             }}
                         >
-                            {d.label}
+                            {tickFormatter ? tickFormatter(d, i, arr) : d.label}
                         </div>
                     )
                 })}
