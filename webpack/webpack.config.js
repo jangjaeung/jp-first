@@ -117,7 +117,6 @@ const webpackConfig = options => {
             }),
             new HtmlWebpackPlugin({
                 template: getAbsolutePath('public/index.html'),
-                favicon: getAbsolutePath('public/favicon.ico'),
                 minify: true,
                 inject: true,
             }),
