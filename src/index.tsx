@@ -1,14 +1,19 @@
 import '@assets/styles/common.scss'
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
+import React from 'react'
+import ReactDOM from 'react-dom/client'
 import App from './app'
+import enableMocking from './mocks'
 
-const rootNode = document.getElementById('root')
+// MSW 초기화 후 React 앱 시작
+const startApp = async (): Promise<void> => {
+    await enableMocking()
 
-if (rootNode) {
-    createRoot(rootNode).render(
-        <StrictMode>
+    const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement)
+    root.render(
+        <React.StrictMode>
             <App />
-        </StrictMode>,
+        </React.StrictMode>,
     )
 }
+
+startApp().catch(console.error)
