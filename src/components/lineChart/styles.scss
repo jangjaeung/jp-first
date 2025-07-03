@@ -1,28 +1,58 @@
 #lineChart {
     position: relative;
     width: 100%;
+    display: flex;
+    width: 100%;
+
+    .chart-area {
+        width: 100%;
+        overflow-y: hidden;
+        position: relative;
+        @include scroll();
+
+        > div {
+            height: 100%;
+            position: relative;
+        }
+    }
 
     // x,y 축 레이블
     .label {
         &-y {
-            position: absolute;
-            top: -0.5rem;
-            left: 0;
+            position: relative;
+            top: 0.2rem;
+            left: -0.8rem;
+            z-index: 2;
+            flex: 0 0 auto;
+            background: #fff;
             font-size: 1.2rem;
             font-weight: 500;
             @include flex(space-between, end, column-reverse);
+
+            > div {
+                position: absolute;
+                left: 0;
+                width: 100%;
+                text-align: right;
+                font-size: 1.2rem;
+                font-weight: 500;
+            }
         }
 
         &-x {
             height: 1.2rem;
             position: absolute;
-            bottom: 1.6rem;
+            bottom: 0;
+            user-select: none;
+            z-index: 4;
+            height: 3rem;
             font-size: 1.1rem;
             @include flex(space-between);
             > div {
                 position: absolute;
                 transform: translateX(-50%);
                 text-align: center;
+                white-space: nowrap;
             }
         }
     }
@@ -31,7 +61,7 @@
         &-x {
             position: absolute;
             top: 0;
-            right: 0;
+            z-index: 1;
             pointer-events: none;
         }
     }
@@ -45,7 +75,6 @@
         font-size: 1rem;
         border-radius: 0.5rem;
         font-weight: 600;
-        // 추후 적용(개발완료후)
         > .value {
             font-size: 1.2rem;
         }
